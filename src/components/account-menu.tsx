@@ -1,22 +1,34 @@
-import { Building, ChevronDown, LogOut } from 'lucide-react'
+import { Building, ChevronDown, LogOut, Replace } from 'lucide-react'
 import { Button } from './ui/button'
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger} from './ui/dropdown-menu'
 import { getProfile } from '@/api/get-profile'
-import { useQuery } from '@tanstack/react-query'
-import { getManagerRestaurant } from '@/api/get-manager-restaurant'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { getManagedRestaurant } from '@/api/get-managed-restaurant'
 import { Skeleton } from './ui/skeleton'
 import { Dialog, DialogTrigger } from './ui/dialog'
 import { StoreProfileDialog } from './store-profile-dialog'
+import { signOut } from '@/api/sign-out'
+import { useNavigate } from 'react-router-dom'
 
 export function AccountMenu(){
+    const navigate = useNavigate()
     const {data:profile, isLoading: isLoadingProfile} = useQuery({
         queryKey: ['profile'],
         queryFn: getProfile,
+        staleTime: Infinity
     })
 
-    const {data:managerRestaurant, isLoading: isLoadingManagedRestaurant} = useQuery({
-        queryKey: ['manager-restaurant'],
-        queryFn: getManagerRestaurant
+    const {data:managedRestaurant, isLoading: isLoadingManagedRestaurant} = useQuery({
+        queryKey: ['managed-restaurant'],
+        queryFn: getManagedRestaurant,
+        staleTime: Infinity
+
+    })
+    const {mutateAsync:signOutFn , isPending: isSigningOut} = useMutation({
+        mutationFn: signOut,
+        onSuccess: () => {
+            navigate('/sign-in', {replace: true})
+        },
     })
 
     return(
@@ -28,7 +40,7 @@ export function AccountMenu(){
                         className='flex items-center gap-2 select-none'>
                         {isLoadingManagedRestaurant ? (
                         <Skeleton className='h-4 w-40'/>) 
-                        : managerRestaurant?.name }
+                        : managedRestaurant?.name }
                         
                         <ChevronDown className='h-4 w-4'></ChevronDown>
                     </Button>
@@ -56,9 +68,11 @@ export function AccountMenu(){
                         </DropdownMenuItem>
                     </DialogTrigger>
                     
-                    <DropdownMenuItem className='text-rose-500 dark:text-rose-400'>
-                        <LogOut className='w-4 h-4 mr-2'/>
-                        <span>Sair</span>
+                    <DropdownMenuItem asChild className='text-rose-500 dark:text-rose-400' disabled={isSigningOut}>
+                        <button className='w-full' onClick={()=> signOutFn()}>
+                            <LogOut className='w-4 h-4 mr-2'/>
+                            <span>Sair</span>
+                        </button>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

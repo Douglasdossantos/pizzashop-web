@@ -1,41 +1,68 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ArrowRight, Search, X } from "lucide-react";
+import { ArrowRight, Locate, Search, X } from "lucide-react";
 import { OrderDetails } from "./order-details";
+import { OrderStatus } from "./order-status";
 
-//export interface OrderTableRowProps{}
+import {formatDistanceToNow} from 'date-fns'
+import {ptBR} from 'date-fns/locale'
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { cancelOrder } from "@/api/cancel-order";
 
-export function OrderTableRow(){
-    return(
+export interface OrderTableRowProps{
+    order:{
+        orderId:string
+        createAt:string
+        status: 'pending'|'canceled'| 'processing'| 'delivering'|'delivered'
+        customerName: string
+        total: number
+    }
+}
+
+export function OrderTableRow({order}: OrderTableRowProps){
+
+    const [isDetailsOpem, setIsDetailsOpem] = useState(false)
+    const {mutateAsync: cancelOrderFn} = useMutation({
+        mutationFn: cancelOrder,
+
+    })
+    
+    return(        
     <TableRow >
         <TableCell>
-            <Dialog>
-                <DialogTrigger>
+            <Dialog open={isDetailsOpem} onOpenChange={setIsDetailsOpem}>
+                <DialogTrigger >
                     <Button variant="outline" size="xs">
                         <Search className='h-3 w-3'/>
                         <span className='sr-only'>Detalhes do pedido</span>
                     </Button>
                 </DialogTrigger>
-                <OrderDetails/>
+                <OrderDetails open={isDetailsOpem} orderId={order.orderId}/>
             </Dialog>
         </TableCell>
-        <TableCell className=' font-mono text-xs font-medium'>sdarfewrt543345</TableCell>
-        <TableCell className='texte-'>
-            Há 15 minutos
+        <TableCell className=' font-mono text-xs font-medium'>
+            {order.orderId}
+        </TableCell>
+        <TableCell className='text-muted-foreground'>
+        {/* {formatDistanceToNow(order.createAt,{ locale: ptBR, addSuffix: true,  })} */}
+            {formatDistanceToNow(new Date(order.createdAt), { locale: ptBR, addSuffix: true })}
+            
+            
         </TableCell>
         <TableCell>
-            <div className=' flex items-center gap-2'>
-                <span className='h-2 w-2 rounded-full bg-slate-400'/>
-                <span className='font-medium text-muted-foreground'>
-                    Pendente
-                </span>
-            </div> 
+           <OrderStatus status={order.status} />
         </TableCell>
         <TableCell className='font-medium'>
-            Douglas dos santos
+        {order.customerName}
         </TableCell>
-        <TableCell className='font-medium'>R$ 149,90</TableCell>
+        <TableCell className='font-medium'>
+            {(order.total/100).toLocaleString('pt-BR', {
+                style:'currency',
+                currency:'BRL',
+            })}
+        </TableCell>
         <TableCell>
         <Button variant='outline' size='xs'>
             <ArrowRight className='h-3 w-3 mr-2'/>
@@ -43,7 +70,12 @@ export function OrderTableRow(){
             </Button>
         </TableCell>
         <TableCell>
-            <Button variant='ghost' size='xs'>
+            <Button 
+                disabled={!['pending','processing'].includes(order.status)} 
+                onClick={() => cancelOrderFn({orderId: order.orderId})}
+                variant='ghost' 
+                size='xs'
+            >
                 <X className='h-3 w-3 mr-2'/>
                 Cancelar
             </Button>
