@@ -1,12 +1,12 @@
 import { api } from "@/lib/axios";
 
-export interface GetMonthCanceldOrdersAmount {
+export interface GetMonthCanceledOrdersAmount {
     amount: number
     diffFromLastMonth: number
 }
 
-export async function getMonthCanceldOrdersAmount(){
-    const response = await api.get<GetMonthCanceldOrdersAmount>(
+export async function getMonthCanceledOrdersAmount(){
+    const response = await api.get<GetMonthCanceledOrdersAmount>(
         '/metrics/month-canceled-orders-amount',
     )
     
