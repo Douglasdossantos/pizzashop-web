@@ -4,6 +4,7 @@ export interface GetDailyRevenueInPeriodQuery {
     from?: Date
     to?: Date
 }
+
 export type GetDailyRevenueInPeriodResponse ={
     date:string
     receipt:number
@@ -22,6 +23,5 @@ export async function getDailyRevenueInPeriod({
             },
         }
     )
-    
     return response.data
 }

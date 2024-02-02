@@ -7,7 +7,7 @@ import {ResponsiveContainer,LineChart,Line, YAxis,XAxis, CartesianGrid,Tooltip} 
 import colors from 'tailwindcss/colors'
 import {DateRange} from 'react-day-picker'
 import {subDays} from 'date-fns'
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 
 export function RevenueChart() {
@@ -16,6 +16,7 @@ export function RevenueChart() {
         from: subDays(new Date(),7),
         to: new Date(),
     })
+
     const {data:dailyRevenueInPeriod} = useQuery({
         queryKey: ['metrics','daily-revenue-in-product',dateRange],
         queryFn: () => getDailyRevenueInPeriod({
@@ -23,6 +24,15 @@ export function RevenueChart() {
             to: dateRange?.to
         }),
     })
+
+    const charDate = useMemo(() => {
+        return dailyRevenueInPeriod?.map(chartItem => {
+            return {
+                date:chartItem.date,
+                receipt: chartItem.receipt/100
+            }
+        })
+    },[dailyRevenueInPeriod])
     return(
         <Card className="col-span-6">
             <CardHeader className="flex flex-row items-center justify-between pd-8">
@@ -40,7 +50,7 @@ export function RevenueChart() {
                 {dailyRevenueInPeriod && (
                     <>
                         <ResponsiveContainer width='100%' height={240}>
-                            <LineChart data={dailyRevenueInPeriod} style={{fontSize:12}} >
+                            <LineChart data={charDate} style={{fontSize:12}} >
                                 <CartesianGrid vertical={false} className="stroke-muted"/>
                                 <XAxis dataKey='date' tickLine={false} axisLine={false} dy={16} />
                                 <YAxis width={80} stroke="#888" axisLine={false} tickLine={false} tickFormatter={(value:number)=> value.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}/>
