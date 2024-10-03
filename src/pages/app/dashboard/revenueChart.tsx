@@ -41,7 +41,7 @@ export function RevenueChart() {
                     <CardDescription>Receita diária no periodo</CardDescription>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Label>Periodo</Label>
+                    <Label>Aline sua chata</Label>
                     <DateRangePicker date={dateRange} onDateChange={setDateRange}/>
 
                 </div>
